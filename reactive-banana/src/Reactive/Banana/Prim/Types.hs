@@ -8,11 +8,10 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.RWS.Lazy
 import           Control.Monad.Trans.State
 import           Data.Functor.Identity
-import qualified Data.HashMap.Strict          as Map
-import qualified Data.HashSet                 as Set
-import           Data.Hashable
+import qualified Data.Map.Strict              as Map
+import qualified Data.Set                     as Set
 import           Data.Monoid
-import           Data.Unique.Really
+import           Data.Unique
 import qualified Data.Vault.Lazy              as Lazy
 import           System.IO.Unsafe                       (unsafePerformIO)
 
@@ -154,7 +153,7 @@ data SomeNode
     | L LatchWrite
     | O Output
 
-instance Show SomeNode where show = show . hash
+-- instance Show SomeNode where show = show . hash
 
 instance Eq SomeNode where
     (P x) == (P y)  =  uidP x == uidP y
@@ -167,8 +166,8 @@ uid (P x) = uidP x
 uid (L x) = uidL x
 uid (O x) = uidO x
 
-instance Hashable SomeNode where
-    hashWithSalt s = hashWithSalt s . uid
+instance Ord SomeNode where
+    x `compare` y = uid x `compare` uid y
 
 {-----------------------------------------------------------------------------
     Show functions for debugging

@@ -4,7 +4,7 @@
 module Reactive.Banana.Prim.IO where
 
 import           Data.Functor
-import           Data.Unique.Really
+import           Data.Unique
 import qualified Data.Vault.Strict  as Strict
 import qualified Data.Vault.Lazy    as Lazy
 import           System.IO.Unsafe             (unsafePerformIO)

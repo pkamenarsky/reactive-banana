@@ -14,16 +14,15 @@ module Reactive.Banana.Prim.Dependencies (
     ) where
 
 import           Control.Monad.Trans.Writer
-import qualified Data.HashMap.Strict        as Map
-import qualified Data.HashSet               as Set
-import           Data.Hashable
+import qualified Data.Map.Strict            as Map
+import qualified Data.Set                   as Set
 import qualified Data.PQueue.Prio.Min       as Q
 
 import           Reactive.Banana.Prim.Order
 import qualified Reactive.Banana.Prim.Order as Order
 
-type Map = Map.HashMap
-type Set = Set.HashSet
+type Map = Map.Map
+type Set = Set.Set
 
 {-----------------------------------------------------------------------------
     Dependency graph
@@ -48,7 +47,7 @@ children deps x =
 parents  deps x = maybe [] id . Map.lookup x $ dParents  deps
 
 -- | The empty dependency graph.
-empty :: Hashable a => Deps a
+empty :: Deps a
 empty = Deps
     { dChildren = Map.empty
     , dParents  = Map.empty
@@ -56,7 +55,7 @@ empty = Deps
     }
 
 -- | Add a new dependency.
-addChild :: (Eq a, Hashable a) => a -> a -> Deps a -> Deps a
+addChild :: Ord a => a -> a -> Deps a -> Deps a
 addChild parent child deps1@(Deps{..}) = deps2
     where
     deps2 = Deps
@@ -67,7 +66,7 @@ addChild parent child deps1@(Deps{..}) = deps2
     when b f = if b then f else id
 
 -- | Change the parent of the first argument to be the second one.
-changeParent :: (Eq a, Hashable a) => a -> a -> Deps a -> Deps a
+changeParent :: Ord a => a -> a -> Deps a -> Deps a
 changeParent child parent deps1@(Deps{..}) = deps2
     where
     deps2 = Deps
@@ -98,7 +97,7 @@ maybeContinue (Just _) = Children
 -- be traversed at some point.
 -- However, all nodes are traversed in dependency order:
 -- A child node is only traversed when all its parent nodes have been traversed.
-traverseDependencies :: forall a m. (Eq a, Hashable a, Monad m)
+traverseDependencies :: forall a m. (Ord a, Monad m)
     => (a -> m Continue) -> Deps a -> [a] -> m ()
 traverseDependencies f deps roots = go $ insertList roots emptyQ
     where
@@ -119,7 +118,7 @@ data DepsQueue a = DQ !(Q.MinPQueue Level a) !(Set a)
 emptyQ :: DepsQueue a
 emptyQ = DQ Q.empty Set.empty
 
-insert :: (Eq a, Hashable a) => Level -> a -> DepsQueue a -> DepsQueue a
+insert :: Ord a => Level -> a -> DepsQueue a -> DepsQueue a
 insert k a q@(DQ queue seen) = {-# SCC insert #-}
     if a `Set.member` seen
         then q
@@ -164,7 +163,7 @@ test2 = id
 
 test3 = changeParent 'A' 'f' $ test2
 
-listChildren :: (Eq a, Hashable a) => Deps a -> a -> [a]
+listChildren :: Ord a => Deps a -> a -> [a]
 listChildren deps x = snd $ runWriter $ traverseDependencies f deps [x]
     where f x = tell [x] >> return Children
     

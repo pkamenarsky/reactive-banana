@@ -14,7 +14,7 @@ import           Data.Functor
 import           Data.Functor.Identity
 import           Data.List
 import           Data.Monoid
-import           Data.Unique.Really
+import           Data.Unique
 import qualified Data.Vault.Lazy           as Lazy
 import           System.IO.Unsafe                  (unsafePerformIO)
 

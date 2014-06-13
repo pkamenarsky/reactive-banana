@@ -13,15 +13,10 @@ module Reactive.Banana.Prim.Order (
     
     ) where
 
-import Data.Functor
-import qualified Data.HashMap.Strict as Map
-import qualified Data.HashSet        as Set
-import           Data.Hashable
-import qualified Data.IntMap.Strict  as IntMap
+import qualified Data.Map.Strict     as Map
+import qualified Data.Set            as Set
 
-type IntMap = IntMap.IntMap
-type Map    = Map.HashMap
-type Set    = Set.HashSet
+type Map    = Map.Map
 
 {-----------------------------------------------------------------------------
     Order by levels
@@ -46,18 +41,18 @@ ground :: Level
 ground = 0
 
 -- | Look up the level of an element. Default level is 'ground'.
-level :: (Eq a, Hashable a) => a -> Order a -> Level
+level :: Ord a => a -> Order a -> Level
 level x = {-# SCC level #-} maybe ground id . Map.lookup x
 
 -- | Make sure that the first argument is at least one level
 -- above the second argument.
-ensureAbove :: (Eq a, Hashable a) => a -> a -> Order a -> Order a
+ensureAbove :: Ord a => a -> a -> Order a -> Order a
 ensureAbove child parent order =
     Map.insertWith max child (level parent order + 1) order
 
 -- | Reassign the parent for a child and recalculate the levels
 -- for the new parents and grandparents.
-recalculateParent :: (Eq a, Hashable a)
+recalculateParent :: Ord a
     => a       -- Child.
     -> a       -- Parent.
     -> Graph a -- Query parents of a node. 
@@ -79,7 +74,7 @@ recalculateParent child parent parents order
 type Graph a = a -> [a]
 
 -- | Depth-first search. List all transitive successors of a node.
-dfs :: (Eq a, Hashable a) => a -> Graph a -> [a]
+dfs :: Ord a => a -> Graph a -> [a]
 dfs x succs = go [x] Set.empty
     where
     go []     _               = []
